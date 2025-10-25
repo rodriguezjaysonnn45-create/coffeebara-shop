@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../App";
+import { apiUrl } from "../utils/api";
 
 const Login: React.FC = () => {
   const { login } = useAuth();
@@ -15,7 +16,7 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5002/api/login", {
+      const res = await fetch(apiUrl('/api/login'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

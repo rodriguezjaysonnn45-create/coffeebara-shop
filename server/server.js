@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import bcrypt from "bcrypt";
-import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+import db from "./db.js";
 
 dotenv.config();
 
@@ -19,40 +19,31 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 5002;
 
-const db = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "coffeebara_spa_db"
-});
-
-// ✅ CHECK DB CONNECTION
+// Ensure database connection and create tables if needed
 async function ensureConnection() {
   try {
-    const conn = await db.getConnection();
-    conn.release();
-    console.log("✅ Connected to MySQL database successfully");
+    await db.query('SELECT 1');
+    console.log('✅ Connected to Postgres database successfully');
   } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
+    console.error('❌ Database connection failed:', err.message);
     process.exit(1);
   }
 }
 
-// ✅ CREATE TABLES IF NOT EXISTS
 async function createTables() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       email VARCHAR(100) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB;
+    );
   `);
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS orders (
-      id INT AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       user_email VARCHAR(100),
       item_name VARCHAR(100) NOT NULL,
       item_image TEXT,
@@ -60,19 +51,31 @@ async function createTables() {
       milk_type VARCHAR(50),
       quantity INT DEFAULT 1,
       special_instructions TEXT,
-      total_price DECIMAL(10, 2),
+      total_price NUMERIC(10, 2),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
-    ) ENGINE=InnoDB;
+      CONSTRAINT fk_user_email FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+    );
   `);
 
-  console.log("✅ Tables are ready");
+  console.log('✅ Tables are ready');
 }
 
 await ensureConnection();
 await createTables();
 
 // ===== ROUTES =====
+
+// HEALTH CHECK
+app.get('/api/health', async (req, res) => {
+  try {
+    // simple DB check
+    await db.query('SELECT 1');
+    res.json({ status: 'ok' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
 
 // SIGNUP
 app.post("/api/signup", async (req, res) => {
@@ -82,12 +85,12 @@ app.post("/api/signup", async (req, res) => {
     return res.status(400).json({ message: "All fields required." });
 
   try {
-    const [existing] = await db.query("SELECT email FROM users WHERE email = ?", [email]);
-    if (existing.length > 0)
+    const existing = await db.query("SELECT email FROM users WHERE email = $1", [email]);
+    if (existing.rows.length > 0)
       return res.status(400).json({ message: "Email already registered." });
 
     const hash = await bcrypt.hash(password, 10);
-    await db.query("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [
+    await db.query("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)", [
       name,
       email,
       hash,
@@ -105,11 +108,10 @@ app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (rows.length === 0)
+    const rows = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (rows.rows.length === 0)
       return res.status(400).json({ message: "User not found." });
-
-    const user = rows[0];
+    const user = rows.rows[0];
     const match = await bcrypt.compare(password, user.password);
 
     if (!match)
@@ -136,9 +138,9 @@ app.post("/api/orders", async (req, res) => {
   } = req.body;
 
   try {
-    const [result] = await db.query(
+    const result = await db.query(
       `INSERT INTO orders (user_email, item_name, item_image, size, milk_type, quantity, special_instructions, total_price)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
       [
         user_email,
         item_name,
@@ -151,7 +153,7 @@ app.post("/api/orders", async (req, res) => {
       ]
     );
 
-    res.status(201).json({ message: "Order placed successfully", orderId: result.insertId });
+    res.status(201).json({ message: "Order placed successfully", orderId: result.rows[0].id });
   } catch (err) {
     console.error("Order error:", err.message);
     res.status(500).json({ message: "Server error during order placement." });
@@ -162,8 +164,8 @@ app.post("/api/orders", async (req, res) => {
 app.get("/api/orders/:email", async (req, res) => {
   const { email } = req.params;
   try {
-    const [rows] = await db.query("SELECT * FROM orders WHERE user_email = ? ORDER BY created_at DESC", [email]);
-    res.json(rows);
+    const rows = await db.query("SELECT * FROM orders WHERE user_email = $1 ORDER BY created_at DESC", [email]);
+    res.json(rows.rows);
   } catch (err) {
     console.error("Order fetch error:", err.message);
     res.status(500).json({ message: "Server error while fetching orders." });
@@ -178,7 +180,7 @@ app.listen(PORT, () => {
 app.delete("/api/orders/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    await pool.query("DELETE FROM orders WHERE id = ?", [id]);
+    await db.query("DELETE FROM orders WHERE id = $1", [id]);
     res.json({ message: "Order deleted successfully." });
   } catch (err) {
     console.error("Delete order error:", err.message);
@@ -192,9 +194,9 @@ app.put("/api/orders/:id", async (req, res) => {
   const { size, milk_type, quantity, special_instructions } = req.body;
 
   try {
-    await pool.query(
-      `UPDATE orders SET size = ?, milk_type = ?, quantity = ?, special_instructions = ?
-       WHERE id = ?`,
+    await db.query(
+      `UPDATE orders SET size = $1, milk_type = $2, quantity = $3, special_instructions = $4
+       WHERE id = $5`,
       [size, milk_type, quantity, special_instructions, id]
     );
 

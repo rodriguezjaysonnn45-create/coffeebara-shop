@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiUrl } from "../utils/api";
 import "../styles/Menu.css";
 
 interface MenuItem {
@@ -78,7 +79,7 @@ const Menu = () => {
       total_price: calculatePrice(),
     };
 
-    const res = await fetch("http://localhost:5002/api/orders", {
+    const res = await fetch(apiUrl('/api/orders'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData),

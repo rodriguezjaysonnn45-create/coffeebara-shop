@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiUrl } from "../utils/api";
 
 const Orders: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -8,7 +9,7 @@ const Orders: React.FC = () => {
 
   useEffect(() => {
     if (!user.email) return;
-    fetch(`http://localhost:5002/api/orders/${user.email}`)
+    fetch(apiUrl(`/api/orders/${user.email}`))
       .then(res => res.json())
       .then(setOrders);
   }, [user.email]);
@@ -16,14 +17,14 @@ const Orders: React.FC = () => {
   // DELETE
   const deleteOrder = async (id: number) => {
     if (!confirm("Remove this order?")) return;
-    await fetch(`http://localhost:5002/api/orders/${id}`, { method: "DELETE" });
+    await fetch(apiUrl(`/api/orders/${id}`), { method: "DELETE" });
     setOrders(orders.filter(o => o.id !== id));
   };
 
   // SAVE EDIT
   const saveEdit = async () => {
     if (!editingOrder) return;
-    await fetch(`http://localhost:5002/api/orders/${editingOrder.id}`, {
+    await fetch(apiUrl(`/api/orders/${editingOrder.id}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editingOrder),

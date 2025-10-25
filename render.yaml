@@ -1,0 +1,32 @@
+# Render service manifest for CoffeeBara backend
+# Edit the fields below (names, repo, env vars) before using with Render.
+
+services:
+  - type: web
+    name: coffeebara-server
+    env: docker
+    plan: starter
+    branch: main
+    # Root directory where the service lives relative to repo root
+    rootDirectory: server
+    # Path to Dockerfile relative to repo root (or relative to rootDirectory)
+    dockerfilePath: server/Dockerfile
+    # Optional: commands are not required for Docker services (Dockerfile used)
+    # buildCommand: ''
+    # startCommand: ''
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://your-netlify-site.netlify.app
+        # mark as secure: false
+    # You can add addons (managed DB) here if desired. Example placeholder:
+    addons:
+      - type: postgres
+        name: coffeebara-db
+        plan: starter
+
+# Note: For security, do NOT include DATABASE_URL or other secrets in this file.
+# After creating the DB addon or managed database in Render, attach it to the
+# service via the Render UI or set DATABASE_URL as a secret env var in the
+# Render dashboard. The migration script can be run with `npm run migrate`.
