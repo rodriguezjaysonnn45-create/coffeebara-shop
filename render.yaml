@@ -7,10 +7,8 @@ services:
     env: docker
     plan: starter
     branch: main
-    # Root directory where the service lives relative to repo root
-    rootDirectory: server
-    # Path to Dockerfile relative to repo root (or relative to rootDirectory)
-    dockerfilePath: server/Dockerfile
+  # Path to Dockerfile relative to the repository root
+  dockerfilePath: Dockerfile
     # Optional: commands are not required for Docker services (Dockerfile used)
     # buildCommand: ''
     # startCommand: ''
