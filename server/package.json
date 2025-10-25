@@ -1,0 +1,32 @@
+{
+  "name": "coffeebara-server",
+  "version": "1.0.0",
+  "description": "Backend server for CoffeeBara SPA website",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "mysql2": "^3.15.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [
+    "coffee",
+    "cafe",
+    "react",
+    "express",
+    "postgresql",
+    "coffeebara"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
+}

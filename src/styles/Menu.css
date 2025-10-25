@@ -1,0 +1,199 @@
+/* ===== MENU PAGE ===== */
+.menu-page {
+  padding: 2rem;
+  text-align: center;
+}
+
+.menu-title {
+  color: #4b2e12;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.menu-card {
+  background: #fff8f1;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+  text-align: center;
+}
+
+.menu-card:hover {
+  transform: scale(1.02);
+}
+
+.menu-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+}
+
+.order-btn {
+  background: #8b4513;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.order-btn:hover {
+  background: #a55c2f;
+}
+
+/* ===== ORDER FORM (MODAL) ===== */
+.order-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.order-form-container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  width: 650px;
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #444;
+  cursor: pointer;
+}
+
+/* ✅ NEW — Side-by-Side Layout */
+.modal-content-layout {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.order-form-image {
+  width: 230px;
+  height: 230px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Right side (form inputs) */
+.order-form-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-form-fields h2 {
+  text-align: left;
+  color: #5a341c;
+  margin-bottom: 5px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #5a341c;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+  border: 1px solid #d0b49f;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.form-group textarea {
+  resize: none;
+  height: 60px;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #8b4513;
+  box-shadow: 0 0 4px rgba(139, 69, 19, 0.3);
+}
+
+.total-display {
+  text-align: right;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4e2e13;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.confirm-btn,
+.cancel-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn {
+  background: #8b4513;
+  color: #fff;
+}
+
+.confirm-btn:hover {
+  background: #a55c2f;
+}
+
+.cancel-btn {
+  background: #e0e0e0;
+  color: #444;
+}
+
+.cancel-btn:hover {
+  background: #ccc;
+}
